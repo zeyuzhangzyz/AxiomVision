@@ -1,7 +1,10 @@
 # AxiomVision: Accuracy-Guaranteed Adaptive Visual Model Selection for Perspective-Aware Video Analytics
 
-
 This repository contains the source code for reproducing the results of our paper titled [**AxiomVision: Accuracy-Guaranteed Adaptive Visual Model Selection for Perspective-Aware Video Analytics**](https://arxiv.org/abs/2407.20124), which is accepted by ACM MM 2024.
+
+![](design.png)
+
+AxiomVision is a general online streaming framework that adaptively selects the most effective visual model based on the end-edge-cloud architecture to ensure the accuracy of video stream analysis in diverse scenarios.
 
 ## 🔧Prerequisites
 
@@ -98,7 +101,7 @@ Execute the following command to reproduce the figures in the paper:
 
 1. Run `experiment_dataprocess.py` (activate the function you want to run)
 2. Run `svd_decomposition.py`
-3. Run `main.py (activate the function you want to run)
+3. Run `main.py` (activate the function you want to run)
 
 To compare various algorithms, please consider three dimensions: algorithm_time, average_payoff, and dnn_time.
 
