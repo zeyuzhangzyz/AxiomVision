@@ -3,11 +3,10 @@ import matplotlib.pyplot as plt
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.image as mpimg
 from PIL import Image, ImageDraw, ImageFont
-import matplotlib.pyplot as plt
+
 import matplotlib.image as mpimg
 from matplotlib.patches import Rectangle
-
-
+from Base.performance import element2result
 
 
 def draw_text_boxes(image_paths, text_list, fontsize=30, font_family='Arial', textcolor='#85586F', boxcolor='#FEECE2',
@@ -386,6 +385,40 @@ def figure6():
     output_file = f'figure6.pdf'
     bar_plot_figure6(values, labels,category_labels, xlabel, ylabel, output_file)
 
+
+
+def figure7():
+    file_path = 'data/figure7_data_0.npy'
+    data_matrix1 = np.load(file_path)
+    file_path = 'data/figure7_data_2.npy'
+    data_matrix2 = np.load(file_path)
+    idx = 1
+    data_matrix = data_matrix1 + data_matrix2
+    summed_matrix = np.zeros((5,5,5))
+    for i in range(0, 10, 2):
+        for j in range(0, 10, 2):
+            summed_matrix[i // 2, j // 2, :] = data_matrix[i, j, :] + data_matrix[i + 1, j, :] + data_matrix[i,
+                                                                                                     j + 1,
+                                                                                                     :] + data_matrix[
+                                                                                                          i + 1, j + 1,
+                                                                                                          :]
+    result = element2result(summed_matrix)
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(result[:,:,idx], annot=True, fmt=".2f", cmap="coolwarm", cbar=True, ax=ax,
+                cbar_kws={"shrink": .82}, annot_kws={"size": 30, "weight": "bold", "family": "Arial"})
+    ax.set_xlabel('Visual Model Index', fontsize=30, fontweight='bold', fontname='Arial')
+    ax.set_ylabel('Environment Type Index', fontsize=30, fontweight='bold', fontname='Arial')
+    ax.tick_params(axis='x', labelsize=30, labelcolor='black')
+    ax.tick_params(axis='y', labelsize=30, labelcolor='black')
+    for label in ax.get_xticklabels() + ax.get_yticklabels():
+        label.set_fontname('Arial')
+        label.set_fontsize(30)
+        label.set_fontweight('bold')
+    plt.subplots_adjust(top=0.95, bottom=0.15, left=0.1, right=1)  # Adjust the layout
+    output_file = f'figure7.pdf'
+    fig.savefig(output_file, format='pdf')
+
+
 if __name__ == '__main__':
 
     # figure1()
@@ -394,5 +427,6 @@ if __name__ == '__main__':
     # figure4()
     # figure5()
     # figure6()
+    figure7()
     pass
 

@@ -66,7 +66,7 @@ def performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold, co
 
     # Check if the standard file exists and is not empty
     if not check_file_status(path1):
-        print(f'{path1} doesn\'t exist or is empty')
+        # print(f'{path1} doesn\'t exist or is empty')
 
         # Check if the test file exists and is not empty
         if not check_file_status(path2):
@@ -79,7 +79,7 @@ def performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold, co
 
     # Check if the test file exists and is not empty
     elif not check_file_status(path2):
-        print(f'{path2} doesn\'t exist or is empty')
+        # print(f'{path2} doesn\'t exist or is empty')
         stdfile = np.loadtxt(path1).reshape(-1, 6)
         stdfile = stdfile[stdfile[:, 5] >= confidence]
         stdfile = stdfile[stdfile[:, 0] == label]
@@ -95,7 +95,7 @@ def performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold, co
         testfile = testfile[testfile[:, 5] >= confidence]
         testfile = testfile[testfile[:, 0] == label]
 
-        TP, FN, iou_accum, iou_recall = 0, 0, 0, 0
+        TP, FN, iou_cum_recall, iou_cum_acc, = 0, 0, 0, 0
         matched = np.ones(len(testfile))  # Track which test boxes are available
 
         for line in stdfile:
@@ -105,9 +105,9 @@ def performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold, co
                 avi_iou_list = iou_list * matched
                 result = np.max(avi_iou_list)
                 max_index = np.argmax(avi_iou_list)
-                iou_accum += result
+                iou_cum_recall += result
                 if result >= threshold:
-                    iou_recall += result
+                    iou_cum_acc += result
                     TP += 1
                     matched[max_index] = 0
                 else:
@@ -116,7 +116,9 @@ def performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold, co
                 FN += 1
 
         if TP != 0:
-            return TP, FN, len(testfile) - TP, iou_accum / (TP + FN), iou_recall / TP
+            return TP, FN, len(testfile) - TP, iou_cum_recall / (TP + FN), iou_cum_acc / TP
+        elif FN != 0:
+            return 0, FN, len(testfile), iou_cum_recall / FN, 0
         else:
             return TP, FN, len(testfile) - TP, 0, 0
 
@@ -170,9 +172,9 @@ def element2performance(TP, FN, FP):
 
 
 def performance(stdpath: str, testpath: str, stdtxt: str, testtxt: str, label: int, threshold: float):
-    TP, FN, FP, mAP, mAR = performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold)
+    TP, FN, FP, cumR, cumA = performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold)
     precision, recall, F1 = element2performance(TP, FN, FP)
-    return precision, recall, F1, mAP, mAR
+    return precision, recall, F1, cumR, cumA
 
 
 def performance_accumulate(stdpath: str, testpath: str, src_name: str, output_name: str, label: int, threshold: float,
@@ -180,43 +182,78 @@ def performance_accumulate(stdpath: str, testpath: str, src_name: str, output_na
     # we can decide whether we should stop at fixed frame
     if frame_end == 0:
         txt_files = [f for f in os.listdir(stdpath) if f.startswith(src_name) and f.endswith('.txt')]
-        TP, FN, FP, mAP_a, mAP_recall = 0, 0, 0, 0, 0
+        TP, FN, FP, cumR, cumA = 0, 0, 0, 0, 0
         for count in range(frame_begin, len(txt_files) + 1):
             stdtxt = f'{src_name}_{count}'
             testtxt = f'{output_name}_{count}'
-            TP_, FN_, FP_, mAP_, mAR_ = performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold)
+            TP_, FN_, FP_, cumR_, cumA_ = performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold)
             TP += TP_
             FN += FN_
             FP += FP_
-            mAP_a += mAP_ * (TP_ + FN_)
-            mAP_recall += mAR_ * TP_
+            cumR += cumR_ * (TP_ + FN_)
+            cumA += cumA_ * TP_
         precision, recall, F1 = element2performance(TP, FN, FP)
+
         if TP != 0:
-            return precision, recall, F1, mAP_a / (TP + FN), mAP_recall / TP
+            return precision, recall, F1, cumR / (TP + FN), cumA / TP
+        elif FN != 0:
+            return precision, recall, F1, cumR / FN, 0
         else:
             return precision, recall, F1, 0, 0
     else:
-        TP, FN, FP, mAP_a, mAP_recall = 0, 0, 0, 0, 0
+        TP, FN, FP, cumR, cumA = 0, 0, 0, 0, 0
         for count in range(frame_begin, frame_end + 1):
             stdtxt = f'{src_name}_{count}'
             testtxt = f'{output_name}_{count}'
-            TP_, FN_, FP_, mAP_, mAR_ = performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold)
+            TP_, FN_, FP_, cumR_, cumA_ = performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold)
             TP += TP_
             FN += FN_
             FP += FP_
-            mAP_a += mAP_ * (TP_ + FN_)
-            mAP_recall += mAR_ * TP_
+            cumR += cumR_ * (TP_ + FN_)
+            cumA += cumA_ * TP_
         precision, recall, F1 = element2performance(TP, FN, FP)
         if TP != 0:
-            return precision, recall, F1, mAP_a / (TP + FN), mAP_recall / TP
+            return precision, recall, F1, cumR / (TP + FN), cumA / TP
+        elif FN != 0:
+            return precision, recall, F1, cumR / FN, 0
         else:
             return precision, recall, F1, 0, 0
 
+def element_accumulate(stdpath: str, testpath: str, src_name: str, output_name: str, label: int, threshold: float,
+                           frame_begin=1, frame_end=0):
+    # we can decide whether we should stop at fixed frame
+    if frame_end == 0:
+        txt_files = [f for f in os.listdir(stdpath) if f.startswith(src_name) and f.endswith('.txt')]
+        TP, FN, FP, cumR, cumA = 0, 0, 0, 0, 0
+        for count in range(frame_begin, len(txt_files) + 1):
+            stdtxt = f'{src_name}_{count}'
+            testtxt = f'{output_name}_{count}'
+            TP_, FN_, FP_, cumR_, cumA_ = performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold)
+            TP += TP_
+            FN += FN_
+            FP += FP_
+            cumR += cumR_ * (TP_ + FN_)
+            cumA += cumA_ * TP_
 
-def videos_performance_accumulate(video_names, dnn, version, label, confidence_threshold, is_free_viewpoint=0, gt='yolov5'):
+    else:
+        TP, FN, FP, cumR, cumA = 0, 0, 0, 0, 0
+        for count in range(frame_begin, frame_end + 1):
+            stdtxt = f'{src_name}_{count}'
+            testtxt = f'{output_name}_{count}'
+            TP_, FN_, FP_, cumR_, cumA_ = performance_element(stdpath, testpath, stdtxt, testtxt, label, threshold)
+            TP += TP_
+            FN += FN_
+            FP += FP_
+            cumR += cumR_ * (TP_ + FN_)
+            cumA += cumA_ * TP_
+
+    return TP, FN, FP, cumR, cumA
+
+
+def videos_performance_accumulate(video_names, dnn, version, label, confidence_threshold, is_free_viewpoint=0,
+          gt='yolov5', src_additional_tag = '', out_additional_tag = ''):
     tmp_data = np.zeros((len(video_names), 5))
-    src_additional_tag = ''
-    out_additional_tag = ''
+
     if dnn == 'mmdet':
         out_additional_tag = '_frame'
     if gt == 'mmdet':
@@ -228,6 +265,64 @@ def videos_performance_accumulate(video_names, dnn, version, label, confidence_t
         testpath = get_txt_path(video_name, dnn, version, is_free_viewpoint=is_free_viewpoint)
         tmp_data[video_index, :] = performance_accumulate(stdpath, testpath, src_name, output_name, label=label,
                                                           threshold=confidence_threshold)
+    return tmp_data
+
+def element2result(new_array):
+    TP = new_array[..., :, 0]
+    FN = new_array[..., :, 1]
+    FP = new_array[..., :, 2]
+    iou_cum_recall = new_array[..., :, 3]
+    iou_cum_acc =  new_array[..., :, 4]
+
+    epsilon = 1e-7
+    precision = TP / (TP + FP + epsilon)
+    recall = TP / (TP + FN + epsilon)
+    F1 = 2 * precision * recall / (precision + recall + epsilon)
+    iou_cum_recall = iou_cum_recall / (TP + FP + epsilon)
+    iou_cum_acc = iou_cum_acc / (TP + epsilon)
+
+    precision[(TP == 0) & (FP != 0)] = 0
+    recall[(TP == 0) & (FN != 0)] = 0
+    F1[TP == 0] = 0
+    precision[(TP == 0) & (FP == 0)] = 1
+    recall[(TP == 0) & (FN == 0)] = 1
+    F1[(TP == 0) & (FP == 0) & (FN == 0)] = 1
+    iou_cum_recall[(TP == 0) & (FN == 0)] = 1
+    iou_cum_acc[(TP == 0)] = 1
+
+    new_array[..., 0] = precision
+    new_array[..., 1] = recall
+    new_array[..., 2] = F1
+    new_array[..., 3] = iou_cum_recall
+    new_array[..., 4] = iou_cum_acc
+    return new_array
+
+
+
+def videos_element_accumulate(video_names, dnn, version, label, confidence_threshold, is_free_viewpoint=0,
+          gt='yolov5', src_additional_tag = '', out_additional_tag = ''):
+    tmp_data = np.zeros(5)
+    brightness_descriptions = ["Significantly_Darker", "Moderately_Darker", "Slightly_Darker",
+                               "Very_Slightly_Darker", "Almost_Natural_Light", "Natural_Light", "Slightly_Brighter",
+                               "Moderately_Brighter", "Significantly_Brighter", "Very_Bright", "Extremely_Bright"]
+
+    if dnn == 'mmdet':
+        out_additional_tag = '_frame'
+    if gt == 'mmdet':
+        src_additional_tag = '_frame'
+    for video_index, video_name in enumerate(video_names):
+
+
+        std_video_name = video_name
+        brightness_descriptions.sort(key=len, reverse=True)
+        for description in brightness_descriptions:
+            std_video_name = std_video_name.replace(description + '_', '')
+        src_name = std_video_name + src_additional_tag
+        stdpath = get_txt_path(std_video_name, gt, 'x', is_free_viewpoint=is_free_viewpoint)
+        testpath = get_txt_path(video_name, dnn, version, is_free_viewpoint=is_free_viewpoint)
+        tmp_data[:] += element_accumulate(stdpath, testpath, src_name, src_name, label=label,
+                                                          threshold=confidence_threshold)
+
     return tmp_data
 
 

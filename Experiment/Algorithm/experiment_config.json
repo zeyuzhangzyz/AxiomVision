@@ -1,0 +1,17 @@
+{
+    "S": 1,
+    "beta": 0.25,
+    "visual_models_begin": [0, 10, 16],
+    "visual_models_end": [10, 16, 17],
+    "prob": 0.5,
+    "real": 1,
+    "change_real": 1,
+    "best_fix": 0,
+    "real_payoff": null,
+    "svd_payoff": null,
+    "svd_result": null,
+    "acc_threshold": 0.5,
+    "brightness_descriptions": ["Significantly_Darker", "Moderately_Darker", "Slightly_Darker",
+                               "Very_Slightly_Darker", "Almost_Natural_Light", "Natural_Light", "Slightly_Brighter",
+                               "Moderately_Brighter", "Significantly_Brighter", "Very_Bright", "Extremely_Bright"]
+}
