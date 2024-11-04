@@ -112,10 +112,11 @@ For details on obtaining inference time, please refer to `demo.py`. The algorith
 If you find this work helpful to your research, please kindly consider citing our paper.
 
 ```
-@article{Dai2024AxiomVision,
+@inproceedings{dai2024axiomvision,
   title={AxiomVision: Accuracy-Guaranteed Adaptive Visual Model Selection for Perspective-Aware Video Analytics},
-  author={Xiangxiang Dai and Zeyu Zhang and Peng Yang and Yuedong Xu and Xutong Liu and John C.S. Lui},
-  journal={arXiv preprint arXiv:2407.20124},
+  author={Dai, Xiangxiang and Zhang, Zeyu and Yang, Peng and Xu, Yuedong and Liu, Xutong and Lui, John CS},
+  booktitle={Proceedings of the 32nd ACM International Conference on Multimedia},
+  pages={7229--7238},
   year={2024}
 }
 ```

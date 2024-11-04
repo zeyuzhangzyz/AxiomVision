@@ -56,9 +56,6 @@ def extract_frames_single(video_folder, video_file, output_folder, img_path):
         cap.release()
     return true_count
 
-
-
-
 def extract_frames(video_folder, output_folder):
     """
     Extract frames from videos in the given folder and save them to the output folder.
@@ -202,7 +199,6 @@ def check_file_status(filename):
         return 0
     else:
         return 1
-
 
 def load_config(config_path='motivation_config.json'):
     with open(config_path, 'r') as config_file:
