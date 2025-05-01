@@ -109,7 +109,7 @@ For details on obtaining inference time, please refer to `demo.py`. The algorith
 
 ## 🌟 Citation
 
-If you find this work helpful to your research, please kindly consider citing our paper.
+If you think this work is helpful to your research, please feel free to cite our paper.
 
 ```
 @inproceedings{dai2024axiomvision,
