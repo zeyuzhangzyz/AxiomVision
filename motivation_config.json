@@ -1,0 +1,83 @@
+{
+    "yolov5_script_path": "DNN/yolov5/detect.py",
+    "weights_dir": "DNN/yolov5/",
+    "yolov5_project_dir": "DNN/yolov5/runs/detect/different_model",
+    "yolov5_train_script_dir": "DNN/yolov5/train.py",
+    "train_weights_dir": "DNN/yolov5/runs/train/",
+    "pretrained_weights_dir": "DNN/yolov5/pre_train_yolov5",
+    "yolov5_train_config_dir": "DNN/yolov5/data",
+    "yolov5_base_weight_dir": "DNN/yolov5/yolov5s.pt",
+    "yolov5_train_source_dir": "Datasets",
+    "dataset_name": "coco5k",
+    "snowy_dataset_name": "snowy",
+    "ssd_script_path": "DNN/SSD/demo.py",
+    "ssd_project_dir": "DNN/SSD/runs/",
+    "faster_rcnn_script_path": "DNN/faster_rcnn/predict.py",
+    "faster_rcnn_project_dir": "DNN/faster_rcnn/runs/",
+    "mmdetection_script_path": "DNN/mmdetection/mmdetection.py",
+    "mmdetection_project_dir": "DNN/mmdetection/runs/",
+    "yolov5_free_viewpoint_project_dir": "DNN/yolov5/runs/detect/free_viewpoint",
+    "confidence_threshold": "0.25",
+    "car_label": "2",
+    "people_label": "0",
+    "data_des_path": "Motivation/data",
+    "performance_versions": ["n","s","m","l","x","","",""],
+    "yolov5_versions": ["n", "s", "m", "l", "x"],
+    "source_dir": "Dataset/youtube_different_environment",
+    "overall_other_dnns": ["faster_rcnn", "mmdetection", "ssd"],
+
+    "figure1_video_names": ["perspective4_1_short", "perspective4_2_short"],
+    "figure1_data_name": "figure1_data",
+
+    "time_length": 121,
+    "figure1_1_source_dir": "Dataset/youtube_different_environment",
+    "figure1_1_video_names" : ["day", "dusk", "night", "snowy"],
+    "figure1_1_versions" : ["n","x"],
+    "figure1_1_data_name": "figure1_1_data",
+    "figure1_1_img_dir": "Motivation/figure1_1_src",
+
+    "figure1_2_source_dir": "Dataset/time_vary",
+    "figure1_2_video_name" : "snowing",
+    "figure1_2_versions" : ["n","s"],
+    "figure1_2_data_name": "figure1_2_data",
+    "figure1_2_other_dnns" : ["faster_rcnn", "mmdetection", "ssd"],
+    
+    "figure1_3_data_name": "figure1_3_data",
+    "figure2_1_source_dir": "Dataset/youtube_different_perspective",
+    "figure2_1_video_names" : ["perspective_1", "perspective_2", "perspective_3", "perspective_4"],
+    "figure2_1_versions" : ["s", "x"],
+    "figure2_1_data_name": "figure2_1_data",
+    "figure2_1_img_dir": "Motivation/figure2_1_src",
+    
+    
+    "figure2_2_video_names" : ["A_Dancer", "Two_Badminton_Players", "Two_Frisbee_Players"],
+    "figure2_2_source_dir": "Dataset/Free-Viewpoint-RGB-D-Video-Dataset",
+    "figure2_2_data_name": "figure2_2_data",
+    "figure6_data_name": "figure6_data",
+    "dnns": ["model.pdparams","human_pp_humansegv2_lite_192x192_pretrained"],
+    "figure6_source_dir": "Dataset/Free_Viewpoint_Dataset",
+
+    "segmentation_dnns" : ["server1","seq_lite"],
+    "segmentation_versions" : ["human_pp_humansegv1_server.yml","human_pp_humansegv2_lite.yml"],
+    "segmentation_params_dir" : ["human_pp_humansegv1_server_512x512_pretrained","human_pp_humansegv2_lite_192x192_pretrained"],
+    "segmentation_config_dir" : "DNN/PaddleSeg/configs",
+    "segmentation_model_dir" : "DNN/PaddleSeg/pretrained_models",
+
+
+
+    "brightness_descriptions": ["Significantly_Darker", "Moderately_Darker", "Slightly_Darker",
+                               "Very_Slightly_Darker", "Almost_Natural_Light", "Natural_Light", "Slightly_Brighter",
+                               "Moderately_Brighter", "Significantly_Brighter", "Very_Bright", "Extremely_Bright"],
+
+    "gamma_values": [0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.5, 1.8, 2.0],
+    "gamma_values_Natural_Light": [1],
+
+
+    "pans": [-90,-60,-30,0,30,60,90],
+    "tilts": [0],
+    "VR_video_names": ["VR_1", "VR_2", "VR_3", "VR_4"],
+    "VR_video_src_path": "Dataset/VR_youtube/original",
+    "VR_img_src_path": "Dataset/VR_youtube/images",
+    "VR_img_des_path": "Dataset/VR_youtube/Environments"
+
+}

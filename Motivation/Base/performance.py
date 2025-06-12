@@ -140,7 +140,7 @@ def Segment_F1_element(stdimg, testimg):
     FP = ((ground_truth == 0) & (predicted == 1)).sum()
     return TP, FN, FP
 
-def segment_F1(stdpath: str, testpath: str, src_name: str, output_name: str):
+def segment_IOU(stdpath: str, testpath: str, src_name: str, output_name: str):
     png_files = [f for f in os.listdir(stdpath) if f.startswith(src_name) and f.endswith('.png')]
     total_TP, total_FN, total_FP = 0,0,0
     for j in range(len(png_files) - 1):
@@ -150,8 +150,14 @@ def segment_F1(stdpath: str, testpath: str, src_name: str, output_name: str):
         total_TP += TP
         total_FN += FN
         total_FP += FP
-    return element2performance(total_TP, total_FN, total_FP)
-
+    if total_TP != 0:
+        iou = total_TP / (total_TP + total_FP + total_FN)
+    else:
+        if total_FP == 0 and total_FN == 0:
+            iou = 1
+        else:
+            iou = 0
+    return iou
 
 def element2performance(TP, FN, FP):
     if TP != 0:
@@ -254,9 +260,9 @@ def videos_performance_accumulate(video_names, dnn, version, label, confidence_t
           gt='yolov5', src_additional_tag = '', out_additional_tag = ''):
     tmp_data = np.zeros((len(video_names), 5))
 
-    if dnn == 'mmdet':
+    if dnn == 'mmdetection':
         out_additional_tag = '_frame'
-    if gt == 'mmdet':
+    if gt == 'mmdetection':
         src_additional_tag = '_frame'
     for video_index, video_name in enumerate(video_names):
         src_name = video_name + src_additional_tag
@@ -299,6 +305,41 @@ def element2result(new_array):
 
 
 
+def new_element2result(new_array):
+    TP = new_array[..., :, 0]
+    FN = new_array[..., :, 1]
+    FP = new_array[..., :, 2]
+    iou_recall = new_array[..., :, 3]
+    iou_acc =  new_array[..., :, 4]
+
+
+
+    epsilon = 1e-7
+    # Calculate precision, recall and F1
+    precision = TP / (TP + FP + epsilon)
+    recall = TP / (TP + FN + epsilon)
+    F1 = 2 * precision * recall / (precision + recall + epsilon)
+
+    iou_recall = iou_recall / (TP + FP + epsilon)
+    iou_acc = 0.4 + precision/2
+
+    precision[(TP == 0) & (FP != 0)] = 0
+    recall[(TP == 0) & (FN != 0)] = 0
+    F1[TP == 0] = 0  # By default, if TP == 0, then F1 = 0
+    # If TP == 0 and either FP == 0 or FN == 0, adjust precision and recall accordingly
+    precision[(TP == 0) & (FP == 0)] = 1
+    recall[(TP == 0) & (FN == 0)] = 1
+    # If TP == 0 and both FP == 0 and FN == 0, then F1 should be 1
+    F1[(TP == 0) & (FP == 0) & (FN == 0)] = 1
+    new_array[..., 0] = precision
+    new_array[..., 1] = recall
+    new_array[..., 2] = F1
+    return new_array
+
+    # return new_array
+
+
+
 def videos_element_accumulate(video_names, dnn, version, label, confidence_threshold, is_free_viewpoint=0,
           gt='yolov5', src_additional_tag = '', out_additional_tag = ''):
     tmp_data = np.zeros(5)
@@ -326,18 +367,51 @@ def videos_element_accumulate(video_names, dnn, version, label, confidence_thres
     return tmp_data
 
 
-def segment_performance(video_names, dnn, version, label, confidence_threshold, is_free_viewpoint=0, gt='yolov5', gap=15, segments=20):
-    segment_data = np.zeros((len(video_names), segments, 5))
-
-    for video_index, video_name in enumerate(video_names):
-        src_name = video_name
-        output_name = video_name
-        stdpath = get_txt_path(video_name, gt, 'x', is_free_viewpoint=is_free_viewpoint)
-        testpath = get_txt_path(video_name, dnn, version, is_free_viewpoint=is_free_viewpoint)
-        for segment in range(segments):
-            segment_data[video_index, segment, :] = performance_accumulate(stdpath, testpath, src_name, output_name,
-                                                                           label=label, threshold=confidence_threshold,
-                                                                           frame_begin=gap * segment + 1,
-                                                                           frame_end=gap * (1 + segment) + 1)
-
+def segment_performance(video_name, dnn, version, label, confidence_threshold, gt='yolov5', gap=30, segments=135):
+    segment_data = np.zeros((segments, 5))
+    src_name = video_name
+    output_name = video_name
+    stdpath = get_txt_path(video_name, gt, 'x')
+    testpath = get_txt_path(video_name, dnn, version)
+    # print(stdpath)
+    # print(testpath)
+    for segment in range(segments):
+        segment_data[segment, :] = performance_accumulate(stdpath, testpath, src_name, output_name,
+                                                                        label=label, threshold=confidence_threshold,
+                                                                        frame_begin=gap * segment,
+                                                                        frame_end=gap * (1 + segment))
     return segment_data
+
+def videos_element_accumulate_100frames(video_names, dnn, version, label, confidence_threshold, is_free_viewpoint=0,
+          gt='yolov5', src_additional_tag = '', out_additional_tag = ''):
+    tmp_data = np.zeros(5)  # [TP, FN, FP, cumR, cumA]
+    brightness_descriptions = ["Significantly_Darker", "Moderately_Darker", "Slightly_Darker",
+                               "Very_Slightly_Darker", "Almost_Natural_Light", "Natural_Light", "Slightly_Brighter",
+                               "Moderately_Brighter", "Significantly_Brighter", "Very_Bright", "Extremely_Bright"]
+
+    if dnn == 'mmdet':
+        out_additional_tag = '_frame'
+    if gt == 'mmdet':
+        src_additional_tag = '_frame'
+    for video_index, video_name in enumerate(video_names):
+        std_video_name = video_name
+        brightness_descriptions.sort(key=len, reverse=True)
+        for description in brightness_descriptions:
+            std_video_name = std_video_name.replace(description + '_', '')
+        src_name = std_video_name + src_additional_tag
+        stdpath = get_txt_path(std_video_name, gt, 'x', is_free_viewpoint=is_free_viewpoint)
+        testpath = get_txt_path(video_name, dnn, version, is_free_viewpoint=is_free_viewpoint)
+        
+        TP, FN, FP, cumR, cumA = element_accumulate(stdpath, testpath, src_name, src_name, 
+                                                   label=label, threshold=confidence_threshold,
+                                                   frame_begin=1, frame_end=100)
+        tmp_data[0] += TP
+        tmp_data[1] += FN
+        tmp_data[2] += FP
+        tmp_data[3] += cumR
+        tmp_data[4] += cumA
+        
+    TP, FN, FP = tmp_data[0], tmp_data[1], tmp_data[2]
+    precision, recall, F1 = element2performance(TP, FN, FP)
+    
+    return precision, recall, F1

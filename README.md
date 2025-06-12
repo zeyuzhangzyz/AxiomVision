@@ -8,18 +8,58 @@ AxiomVision is a general online streaming framework that adaptively selects the 
 
 ## 🔧Prerequisites
 
-(If you're only interested in the plotting part, please ignore this section.)
+This project integrates multiple computer vision models and standardizes their output formats for consistent evaluation and comparison.
 
-**If you want to run based on your dataset**
+### Output Format Standardization
 
-To get started, ensure that you can run multiple target detection models (such as [YOLOv5](https://github.com/ultralytics/yolov5), [SSD](https://github.com/lufficc/SSD), etc.) or other computer vision tasks, and importantly, modify their source code to ensure that the output TXT detection results have the same format.
+All models have been modified to output detection results in a unified YOLO-style format:
+- Class label (0-based index)
+- Normalized center x-coordinate
+- Normalized center y-coordinate
+- Normalized width
+- Normalized height
+- Confidence score (optional)
 
-For example, in the output TXT file of YOLOv5, if confidence is included, the format is as follows: the first column is the class label, the second is the normalized center x-coordinate, the third is the normalized center y-coordinate, the fourth is the normalized width, the fifth is the normalized height, and the sixth is the confidence score.  In contrast, [mmdetection](https://github.com/open-mmlab/mmdetection)'s format outputs a JSON file for each image frame. This JSON file contains a dictionary with three keys: labels, scores, and bounding boxes. The values of boxes are the coordinates before normalization and sequentially represent the x and y coordinates of the top-left corner, followed by the x and y coordinates of the bottom-right corner.
+### Integrated Models
 
-We modified the source code of these programs to standardize the output file format by altering the way the results are saved. 
+1. **Faster R-CNN**
+   - Source: [deep-learning-for-image-processing](https://github.com/WZMIAOMIAO/deep-learning-for-image-processing)
+   - Modifications:
+     - Standardized output format in `predict.py`
+     - Added image/video support
+     - Implemented model warm-up
 
+2. **YOLOv5**
+   - Source: [ultralytics/yolov5](https://github.com/ultralytics/yolov5)
+   - Modifications:
+     - Enhanced `detect.py` for result saving
+     - Added inference time tracking
 
-We also used the [Paddle](https://github.com/PaddlePaddle/PaddleSeg) segmentation model and created an environment named "Paddle" You only need to prepare this setup if you want to test segmentation tasks.
+3. **SSD**
+   - Source: [lufficc/SSD](https://github.com/lufficc/SSD)
+   - Modifications:
+     - Standardized output format in `demo.py`
+     - Added image/video support
+
+4. **PaddleSeg**
+   - Source: [PaddlePaddle/PaddleSeg](https://github.com/PaddlePaddle/PaddleSeg)
+   - Setup:
+     - Pre-trained models available in `DNN/PaddleSeg/pretrained_models`
+     - Requires "Paddle" environment for segmentation tasks to avoid the difference with other models.
+
+5. **MMDetection**
+   - Source: [open-mmlab/mmdetection](https://github.com/open-mmlab/mmdetection)
+   - Modifications:
+     - Created `mmdetection.py` for standardized output
+     - Enhanced `demo/image_demo.py` and `apis/det_inferencer.py`
+     - Added score threshold parameter
+
+### Note
+
+The original model outputs have been modified to ensure consistent evaluation. For example:
+- YOLOv5: Modified TXT output format
+- MMDetection: Converted JSON output to standardized TXT format
+- All models: Normalized coordinates and unified class indexing
 
 ## 📚 Dataset: 
 We searched for online traffic cameras on YouTube and found four different views monitoring the same intersection. We saved scenes from various environments, including daytime, dusk, night, and snowy conditions.
@@ -35,13 +75,82 @@ We searched for online traffic cameras on YouTube and found four different views
 | Github | Videos | https://github.com/sjtu-medialab/Free-Viewpoint-RGB-D-Video-Dataset |
 | CADC  Dataset |   Videos  | http://cadcd.uwaterloo.ca/ |
 | COCO Dataset | Images  | http://images.cocodataset.org/zips/train2017.zip |
+| RESIDE-β | Images  | https://sites.google.com/view/reside-dehaze-datasets/reside-%CE%B2 (RTTS part)|
+
+You can download those datasets from the links above. But you need to process them by yourself to adapt those lables or images. You can directly use our processed datasets from google drive: [link](https://drive.google.com/drive/folders/1WPPuVA9wclDjcmMxeMlkkPy7pKU01Olm?usp=drive_link)
+
+
+
 
 
 ## 👉 Code Structure
 
 ```
 .
-├── README.md
+
+|-- README.md
+├── Motivation
+│   ├── Base
+│   │   ├── video.py
+│   │   └── performance.py
+│   ├── data
+│   │   ├── figure1_1_data.npy
+│   │   ├── figure1_2_data.npy
+│   │   ├── figure1_3_data.npy
+│   │   ├── figure1_4_data.npy
+│   │   ├── figure2_1_data.npy
+│   │   └── figure2_2_data.npy
+│   ├── figure4_src_img
+│   │   ├── light1.jpg
+│   │   ├── ...
+│   │   └── light4.jpg
+│   ├── figure5_src_img
+│   │   ├── perspective_1.jpg
+│   │   ├── ...
+│   │   └── perspective_4.jpg
+│   ├── motivation_config.json
+│   ├── motivation_dataprocess.py
+│   └── motivation_plot.py
+|-- Experiment
+|   |-- Algorithm
+|   |   |-- Axiomvision.py
+|   |   |-- ... (different algorithms)
+|   |   |-- Greedy.py
+|   |   |-- paras.py
+|   |   |-- experiment_config.json
+|   |   |-- performance.py
+|   |   |-- video.py
+|   |   |-- Base.py
+|   |   |-- Enviroment.py
+|   |-- retrained_models
+|   |   |-- coco5k_Significantly_Darker_100
+|   |   |-- ...
+|   |   |-- coco5k_Extremely_Bright_100
+|   |-- raw_data (some basic results)
+|   |   |-- real_payoff_0_1_17.npy
+|   |   |-- ...
+|   |   |-- svd_results_0_1_17.npz
+|   |-- main.py
+|   |-- experiment_prepare_config.json
+|   |-- experiment_dataprocess.py
+|   |-- experiment_plot.py
+|   |-- demo.py % Example of modifying model source code for time and accuracy analysis
+|   |-- svd_decomposition.py
+|-- DNN
+|   |-- faster_rcnn
+|   |-- mmdetection
+|   |-- SSD
+|   |-- yolov5
+|   |-- PaddleSeg
+|-- Dataset
+|   |-- coco5k
+|   |-- RTTS
+|   |-- snowy
+|   |-- Free-Viewpoint-RGB-D-Video-Dataset
+|   |-- time_vary
+|   |-- VR_youtube
+|   |-- youtube_differemt_environment
+|   |-- youtube_different_perspective
 ├── Motivation
 │   ├── Base
 │   │   ├── video.py
@@ -50,7 +159,7 @@ We searched for online traffic cameras on YouTube and found four different views
 │   │   ├── figure1_data.npy
 │   │   ├── ...
 │   │   └── figure6_data_segmentation.npy
-│   ├── figure4_src_img
+│   ├── figure1_1_src_img
 │   │   ├── light1.jpg
 │   │   ├── ...
 │   │   └── light4.jpg
@@ -89,15 +198,17 @@ We searched for online traffic cameras on YouTube and found four different views
 
 Execute the following command to reproduce the figures in the paper:
 
-####  Motivation:
 
-1. Set up your environment
-2. Prepare your dataset (if needed)
-3. Run `motivation_plot.py` (activate the function you want to run)
+## Motivation:
+
+### Getting Started
+1. Clone the original repositories and change the code as we mentioned above or use our modified code.
+2. Set up your environment
+3. Prepare your dataset (if needed)
 4. Run `motivation_dataprocess.py` (activate the function you want to run)
+5. Run `motivation_plot.py` (activate the function you want to run)
 
-
-####  Experiment:
+###  Experiment:
 
 1. Run `experiment_dataprocess.py` (activate the function you want to run)
 2. Run `svd_decomposition.py`
@@ -105,7 +216,6 @@ Execute the following command to reproduce the figures in the paper:
 
 To compare various algorithms, please consider three dimensions: algorithm_time, average_payoff, and dnn_time.
 
-For details on obtaining inference time, please refer to `demo.py`. The algorithm time can be recorded by writing to a txt file within the activation function.
 
 ## 🌟 Citation
 
