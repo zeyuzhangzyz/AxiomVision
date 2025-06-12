@@ -61,6 +61,9 @@ The original model outputs have been modified to ensure consistent evaluation. F
 - MMDetection: Converted JSON output to standardized TXT format
 - All models: Normalized coordinates and unified class indexing
 
+Three large models are not included in this repository due to their size. You can download them from the following link based on the path in the [link](https://drive.google.com/drive/folders/1lRYIBUrhWHA8jWTqQOIZd1hcsHoIwXMR?usp=drive_link). Please move the downloaded models to the corresponding folder in the repository. Such as 'yolov5x.pt' is in 'DNN/yolov5/' in the link, so please make sure the path of the model is 'DNN/yolov5/yolov5x.pt'.
+
+
 ## 📚 Dataset: 
 We searched for online traffic cameras on YouTube and found four different views monitoring the same intersection. We saved scenes from various environments, including daytime, dusk, night, and snowy conditions.
 
@@ -219,7 +222,7 @@ To compare various algorithms, please consider three dimensions: algorithm_time,
 
 ## 🌟 Citation
 
-If you think this work is helpful to your research, please feel free to cite our paper.
+If you find this work helpful to your research, please kindly consider citing our paper.
 
 ```
 @inproceedings{dai2024axiomvision,
