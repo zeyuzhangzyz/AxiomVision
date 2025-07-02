@@ -304,42 +304,6 @@ def element2result(new_array):
     return new_array
 
 
-
-def new_element2result(new_array):
-    TP = new_array[..., :, 0]
-    FN = new_array[..., :, 1]
-    FP = new_array[..., :, 2]
-    iou_recall = new_array[..., :, 3]
-    iou_acc =  new_array[..., :, 4]
-
-
-
-    epsilon = 1e-7
-    # Calculate precision, recall and F1
-    precision = TP / (TP + FP + epsilon)
-    recall = TP / (TP + FN + epsilon)
-    F1 = 2 * precision * recall / (precision + recall + epsilon)
-
-    iou_recall = iou_recall / (TP + FP + epsilon)
-    iou_acc = 0.4 + precision/2
-
-    precision[(TP == 0) & (FP != 0)] = 0
-    recall[(TP == 0) & (FN != 0)] = 0
-    F1[TP == 0] = 0  # By default, if TP == 0, then F1 = 0
-    # If TP == 0 and either FP == 0 or FN == 0, adjust precision and recall accordingly
-    precision[(TP == 0) & (FP == 0)] = 1
-    recall[(TP == 0) & (FN == 0)] = 1
-    # If TP == 0 and both FP == 0 and FN == 0, then F1 should be 1
-    F1[(TP == 0) & (FP == 0) & (FN == 0)] = 1
-    new_array[..., 0] = precision
-    new_array[..., 1] = recall
-    new_array[..., 2] = F1
-    return new_array
-
-    # return new_array
-
-
-
 def videos_element_accumulate(video_names, dnn, version, label, confidence_threshold, is_free_viewpoint=0,
           gt='yolov5', src_additional_tag = '', out_additional_tag = ''):
     tmp_data = np.zeros(5)
