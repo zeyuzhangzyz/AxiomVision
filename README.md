@@ -6,11 +6,118 @@ This repository contains the source code for reproducing the results of our pape
 
 AxiomVision is a general online streaming framework that adaptively selects the most effective visual model based on the end-edge-cloud architecture to ensure the accuracy of video stream analysis in diverse scenarios.
 
+
+
+## 🚀 Quick Start Guide
+
+To quickly reproduce the main results, follow these steps:
+
+1. **Environment Setup**  
+   Set up both the main (AxiomVision) and segmentation (Paddle) environments as described in the [Environment Setup](#️-environment-setup) section below.
+
+2. **Dataset Preparation**  
+   See the [Dataset](#-dataset) section for details. You can directly download our processed datasets from [Google Drive](https://drive.google.com/drive/folders/1WPPuVA9wclDjcmMxeMlkkPy7pKU01Olm?usp=drive_link).
+
+3. **Motivation Experiments**  
+   Activate the main environment (AxiomVision) and run the following commands (activate the required functions as indicated by comments in the scripts):
+   ```bash
+   python Motivation/motivation_dataprocess.py
+   python Motivation/motivation_plot.py
+   ```
+
+4. **Main Experiments**  
+   Run the following commands (activate the required functions as indicated by comments in the scripts):
+   ```bash
+   python Experiment/experiment_dataprocess.py
+   python Experiment/svd_decomposition.py
+   python Experiment/main.py
+   ```
+
+> **Note:**
+> - Please refer to the comments in each script for details on which functions to activate.
+> - When comparing algorithms, consider three key metrics: `algorithm_time`, `average_payoff`, and `dnn_time`.
+
+
+## ⚙️ Environment Setup
+
+This project is tested on a Windows 11 system equipped with an NVIDIA 4060 Laptop GPU and CUDA 11.8. The following instructions describe the setup of two separate environments to ensure compatibility and reproducibility.
+
+### 1. Main Environment (AxiomVision)
+
+This environment is used for the majority of model inference and training tasks.
+
+```bash
+# Create the main environment
+git clone https://github.com/zeyuzhangzyz/AxiomVision.git
+
+conda create -n AxiomVision python=3.10.10 -y
+conda activate AxiomVision
+
+# Install dependencies
+cd AxiomVision
+pip install -r requirements.txt
+
+# Install PyTorch (CUDA 11.8 version)
+pip install torch==2.0.1+cu118 torchvision==0.15.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+
+# Install mmcv (ensure strict version compatibility with CUDA/PyTorch; use the official wheel)
+pip install mmcv==2.1.0 -f https://download.openmmlab.com/mmcv/dist/cu118/torch2.0.1/index.html
+# Note: This step may require compilation and can take 10-15 minutes.
+```
+
+> **Note:**
+> - It is essential to install mmcv using the provided wheel link. Avoid installing via `pip install mmcv` directly, as this may result in missing C++/CUDA extensions and subsequent inference errors.
+> - When running the project, the default working directory should be the root of the AxiomVision project, and all relative paths are based on this location.
+
+### 2. Segmentation Environment (Paddle)
+
+Due to dependency conflicts between PaddleSeg and the main environment, a separate environment is required. 
+
+```bash
+# Create the Paddle environment
+conda create -n Paddle python=3.11.5 -y
+conda activate Paddle
+
+# Install dependencies
+cd DNN/PaddleSeg
+pip install -r requirements.txt
+
+# Install PaddlePaddle (CUDA 11.8 version)
+python -m pip install paddlepaddle-gpu==3.0.0b2 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
+```
+
+> **Note:**
+> - Activate the Paddle environment only when performing segmentation tasks (e.g., `run_data_figure2_2`).
+> - For all other tasks, always use the main (AxiomVision) environment.
+> - If you encounter the error `No module named 'mmcv._ext'`, please ensure that mmcv is installed using the official wheel and that the CUDA and PyTorch versions are strictly matched as specified above.
+
+
 ## 🔧Prerequisites
 
-This project integrates multiple computer vision models and standardizes their output formats for consistent evaluation and comparison.
+### Model Weights Download & Placement
 
-### Output Format Standardization
+Due to the large size of model weights, they are not included in this repository. Please follow the steps below to obtain and place the weights:
+
+1. **Download Weights**  
+   Visit the [Google Drive link](https://drive.google.com/drive/folders/1lRYIBUrhWHA8jWTqQOIZd1hcsHoIwXMR?usp=drive_link) to download all required model weights.
+
+2. **Place Weights**  
+   After downloading, place each model weight file into the corresponding directory in your local repository, matching the folder structure shown in Google Drive. For example:
+   - If you download `yolov5x.pt` from `DNN/yolov5/` in the Drive, place it at `DNN/yolov5/yolov5x.pt` in your local repository.
+   - For PaddleSeg, Faster R-CNN, SSD, MMDetection, etc., follow the same rule: strictly match the directory structure.
+
+3. **Notes**  
+   - **The relative paths must match exactly**, otherwise the code may not find the models.
+   - If you encounter loading errors, please first check whether the file paths and names are consistent with the repository structure.
+
+
+
+This project integrates multiple computer vision models and standardizes their output formats for consistent evaluation and comparison. 
+
+The following sections provide detailed instructions for model weights download and output format standardization.
+
+<details>
+<summary><b>🔗 Output Format Standardization (Click to expand)</b></summary>
 
 All models have been modified to output detection results in a unified YOLO-style format:
 - Class label (0-based index)
@@ -60,8 +167,7 @@ The original model outputs have been modified to ensure consistent evaluation. F
 - YOLOv5: Modified TXT output format
 - MMDetection: Converted JSON output to standardized TXT format
 - All models: Normalized coordinates and unified class indexing
-
-Three large models are not included in this repository due to their size. You can download them from the following link based on the path in the [link](https://drive.google.com/drive/folders/1lRYIBUrhWHA8jWTqQOIZd1hcsHoIwXMR?usp=drive_link). Please move the downloaded models to the corresponding folder in the repository. Such as 'yolov5x.pt' is in 'DNN/yolov5/' in the link, so please make sure the path of the model is 'DNN/yolov5/yolov5x.pt'.
+</details>
 
 
 ## 📚 Dataset: 
@@ -92,53 +198,8 @@ You can download those datasets from the links above. But you need to process th
 .
 
 |-- README.md
-├── Motivation
-│   ├── Base
-│   │   ├── video.py
-│   │   └── performance.py
-│   ├── data
-│   │   ├── figure1_1_data.npy
-│   │   ├── figure1_2_data.npy
-│   │   ├── figure1_3_data.npy
-│   │   ├── figure1_4_data.npy
-│   │   ├── figure2_1_data.npy
-│   │   └── figure2_2_data.npy
-│   ├── figure4_src_img
-│   │   ├── light1.jpg
-│   │   ├── ...
-│   │   └── light4.jpg
-│   ├── figure5_src_img
-│   │   ├── perspective_1.jpg
-│   │   ├── ...
-│   │   └── perspective_4.jpg
-│   ├── motivation_config.json
-│   ├── motivation_dataprocess.py
-│   └── motivation_plot.py
-|-- Experiment
-|   |-- Algorithm
-|   |   |-- Axiomvision.py
-|   |   |-- ... (different algorithms)
-|   |   |-- Greedy.py
-|   |   |-- paras.py
-|   |   |-- experiment_config.json
-|   |   |-- performance.py
-|   |   |-- video.py
-|   |   |-- Base.py
-|   |   |-- Enviroment.py
-|   |-- retrained_models
-|   |   |-- coco5k_Significantly_Darker_100
-|   |   |-- ...
-|   |   |-- coco5k_Extremely_Bright_100
-|   |-- raw_data (some basic results)
-|   |   |-- real_payoff_0_1_17.npy
-|   |   |-- ...
-|   |   |-- svd_results_0_1_17.npz
-|   |-- main.py
-|   |-- experiment_prepare_config.json
-|   |-- experiment_dataprocess.py
-|   |-- experiment_plot.py
-|   |-- demo.py % Example of modifying model source code for time and accuracy analysis
-|   |-- svd_decomposition.py
+|-- motivation_config.json
+|-- requirements.txt
 |-- DNN
 |   |-- faster_rcnn
 |   |-- mmdetection
@@ -159,18 +220,18 @@ You can download those datasets from the links above. But you need to process th
 │   │   ├── video.py
 │   │   └── performance.py
 │   ├── data
-│   │   ├── figure1_data.npy
-│   │   ├── ...
-│   │   └── figure6_data_segmentation.npy
-│   ├── figure1_1_src_img
-│   │   ├── light1.jpg
-│   │   ├── ...
-│   │   └── light4.jpg
-│   ├── figure5_src_img
-│   │   ├── perspective_1.jpg
-│   │   ├── ...
-│   │   └── perspective_4.jpg
-│   ├── motivation_config.json
+│   │   ├── figure1_1_data.npy
+│   │   ├── figure1_2_data.npy
+│   │   ├── figure1_3_data.npy
+│   │   ├── figure1_4_data_label_0.npy
+│   │   ├── figure1_4_data_label_1.npy
+│   │   ├── figure1_4_data_label_2.npy
+│   │   ├── figure2_1_data.npy
+│   │   ├── figure2_2_data.npy
+│   │   ├── overall_data_label_0.npy
+│   │   └── overall_data_label_2.npy
+│   ├── figure1_1_src
+│   ├── figure2_1_src
 │   ├── motivation_dataprocess.py
 │   └── motivation_plot.py
 └── Experiment
@@ -185,39 +246,16 @@ You can download those datasets from the links above. But you need to process th
     │   ├── video.py
     │   ├── Base.py
     │   └── Enviroment.py
-    ├── retrained_models
-    │   ├── coco5k_Significantly_Darker_100
-    │   ├── ...
-    │   └── coco5k_Extremely_Bright_100
+    ├── data_label_0.npy
+    ├── data_label_2.npy
+    ├── heatmap_data_0.npy
+    ├── heatmap_data_2.npy
     ├── main.py
     ├── experiment_prepare_config.json
     ├── experiment_dataprocess.py
-    ├── demo.py (This is an example of modifying different model's source code to analyze both time and accuracy together.)
     └── svd_decomposition.py
 
 ```
-
-## 🚀How to Run
-
-Execute the following command to reproduce the figures in the paper:
-
-
-## Motivation:
-
-### Getting Started
-1. Clone the original repositories and change the code as we mentioned above or use our modified code.
-2. Set up your environment
-3. Prepare your dataset (if needed)
-4. Run `motivation_dataprocess.py` (activate the function you want to run)
-5. Run `motivation_plot.py` (activate the function you want to run)
-
-###  Experiment:
-
-1. Run `experiment_dataprocess.py` (activate the function you want to run)
-2. Run `svd_decomposition.py`
-3. Run `main.py` (activate the function you want to run)
-
-To compare various algorithms, please consider three dimensions: algorithm_time, average_payoff, and dnn_time.
 
 
 ## 🌟 Citation

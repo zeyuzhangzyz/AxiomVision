@@ -9,6 +9,7 @@
     "yolov5_base_weight_dir": "DNN/yolov5/yolov5s.pt",
     "yolov5_train_source_dir": "Datasets",
     "dataset_name": "coco5k",
+    "dataset_yaml_path": "DNN/yolov5/data/coco5k.yaml",
     "snowy_dataset_name": "snowy",
     "ssd_script_path": "DNN/SSD/demo.py",
     "ssd_project_dir": "DNN/SSD/runs/",
@@ -53,9 +54,7 @@
     "figure2_2_video_names" : ["A_Dancer", "Two_Badminton_Players", "Two_Frisbee_Players"],
     "figure2_2_source_dir": "Dataset/Free-Viewpoint-RGB-D-Video-Dataset",
     "figure2_2_data_name": "figure2_2_data",
-    "figure6_data_name": "figure6_data",
-    "dnns": ["model.pdparams","human_pp_humansegv2_lite_192x192_pretrained"],
-    "figure6_source_dir": "Dataset/Free_Viewpoint_Dataset",
+
 
     "segmentation_dnns" : ["server1","seq_lite"],
     "segmentation_versions" : ["human_pp_humansegv1_server.yml","human_pp_humansegv2_lite.yml"],
@@ -63,7 +62,7 @@
     "segmentation_config_dir" : "DNN/PaddleSeg/configs",
     "segmentation_model_dir" : "DNN/PaddleSeg/pretrained_models",
 
-
+    "experiment_data_path": "Experiment/data",
 
     "brightness_descriptions": ["Significantly_Darker", "Moderately_Darker", "Slightly_Darker",
                                "Very_Slightly_Darker", "Almost_Natural_Light", "Natural_Light", "Slightly_Brighter",
